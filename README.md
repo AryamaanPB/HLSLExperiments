@@ -10,8 +10,8 @@ $\ radiusLimit =  clamp(radius, 0.1, 0.5)$
 
 I later created a material and input the $\ sin(TimeInputData) $ as the radius input.
 
-![AlphaMask Circle](https://github.com/AryamaanPB/Unreal-Engine-Plugin-Experiments/blob/master/Content/GIF/AlphaMask.gif)
+![AlphaMask Circle](https://github.com/AryamaanPB/HLSLExperiments/blob/master/Content/GIF/AlphaMask.gif)
 
 Shader complexity
 
-![AlphaMask Circle Shader Complexity](https://github.com/AryamaanPB/Unreal-Engine-Plugin-Experiments/blob/master/Content/Inages/AlphaMaskShaderComplexity.png)
+![AlphaMask Circle Shader Complexity](https://github.com/AryamaanPB/HLSLExperiments/blob/master/Content/Inages/AlphaMaskShaderComplexity.png)
