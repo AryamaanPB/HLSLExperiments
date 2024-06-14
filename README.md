@@ -14,4 +14,4 @@ I later created a material and input the $\ sin(TimeInputData) $ as the radius i
 
 Shader complexity
 
-![AlphaMask Circle Shader Complexity](https://github.com/AryamaanPB/HLSLExperiments/blob/master/Content/Inages/AlphaMaskShaderComplexity.png)
+![AlphaMask Circle Shader Complexity](https://github.com/AryamaanPB/HLSLExperiments/blob/master/Content/Images/AlphaMaskShaderComplexity.png)
