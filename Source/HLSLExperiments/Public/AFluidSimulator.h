@@ -14,7 +14,6 @@ class HLSLEXPERIMENTS_API AAFluidSimulator : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AAFluidSimulator();
-    virtual ~AAFluidSimulator();
 
 protected:
 	// Called when the game starts or when spawned
@@ -24,32 +23,38 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-private:
-    void AddSource(int inN, float* x, float* s, float dt);
-    void Diffuse(int inN, int b, float* x, float* x0, float diff, float dt);
-    void Advect(int inN, int b, float* d, float* d0, float* inU, float* inV, float dt);
-    void Project(int inN, float* inU, float* inV, float* p, float* div);
-    void SetBnd(int inN, int b, float* x);
-    void FluidStep(int inN, float* inU, float* inV, float* inu_prev, float* inv_prev, float* indens, float* indens_prev, float visc, float diff, float dt);
+	/** Projectile class to spawn */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	TSubclassOf<class AActor> ProjectileClass;
 
-    const int N = 64;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	TArray<AActor*> refs;
 
-    float* u;
-    float* v;
-    float* u_prev;
-    float* v_prev;
-    float* dens;
-    float* dens_prev;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	FVector dimensions;
 
-    UPROPERTY(EditAnywhere)
-    float Viscosity = 0.0001f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	TArray<float> density;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	TArray<float> prev_density;
 
-    UPROPERTY(EditAnywhere)
-    float Diffusion = 0.0001f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	TArray<float> vx;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	TArray<float> vy;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	TArray<float> prev_vx;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Array_Ob)
+	TArray<float> prev_vy;
 
-    UPROPERTY(EditAnywhere)
-    UTexture2D* FluidTexture;
+	void set_boundary(int N, int b, float* x);
+	void gauss_siedel(int N, int b, float* x, float* x0, float a, float c);
+	void diffuse(int N, int b, float* x, float* x0, float diff, float dt);
+	void advect(int N, int b, float* d, float* d0, float* u, float* v, float dt);
+	void project(int N, float* u, float* v, float* p, float* div);
+	void density_step(int N, float* x, float* x0, float* u, float* v, float diff, float dt);
+	void velocity_step(int N, float* u, float* v, float* u0, float* v0, float visc, float dt);
 
-    uint8* TextureData;
+	int IX(int i, int j, int N);
 
 };
