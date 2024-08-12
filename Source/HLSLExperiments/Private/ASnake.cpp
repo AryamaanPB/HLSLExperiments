@@ -47,7 +47,8 @@ void ASnake::Tick(float DeltaTime)
         FoodPosition = FVector(FMath::RandRange(0.0f, 1.0f), FMath::RandRange(0.0f, 1.0f), 0.0f);
     }
 
-    CheckSelfCollision(SnakeHeadPosition);
+    //
+    // CheckSelfCollision(SnakeHeadPosition);
 
     // Get the collection instance from the world
     if (MaterialParameterCollection)
@@ -107,18 +108,28 @@ bool ASnake::CheckCollisionWithFood(FVector InFoodPosition)
 
 void ASnake::CheckSelfCollision(const FVector& HeadPosition)
 {
+    const float CollisionThreshold = CellSize * 0.5f; // Use half the CellSize as a buffer
+
     // Loop through each segment of the snake's tail to check for collisions with the head
-    for (const FVector& TailSegment : TailPositions)
+    for (int32 i = 1; i < TailPositions.Num(); ++i) // Start from 1 to skip the immediate previous head position
     {
-        if (FVector::Dist(HeadPosition, TailSegment) < CellSize)
+        if (FVector::Dist(HeadPosition, TailPositions[i]) < CollisionThreshold)
         {
-            // If the head touches the tail, reset the snake
+            // If the head touches the tail, log the collision and reset the snake
+            UE_LOG(LogTemp, Warning, TEXT("Self-collision detected!"));
+
+            // Reset snake length and tail positions
             SnakeLength = 1;
             TailPositions.Empty();
-            break;
+
+            // Optionally, reset the snake's head position to the center or a safe start position
+            SnakeHeadPosition = FVector(0.5f, 0.5f, 0.0f);
+
+            return; // Exit after resetting
         }
     }
 }
+
 
 // Set the direction of the snake
 void ASnake::SetDirection(FVector NewDirection)

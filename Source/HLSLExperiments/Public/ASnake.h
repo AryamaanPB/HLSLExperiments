@@ -33,9 +33,13 @@ public:
     // Function to set direction
     void SetDirection(FVector NewDirection);
 
+public:
+    UPROPERTY(BlueprintReadOnly)
+    TArray<FVector> TailPositions;
+
 private:
     FVector CurrentDirection;
-    TArray<FVector> TailPositions;
+
     int32 SnakeLength;
     float SnakeSpeed;
     FVector SnakeHeadPosition;
