@@ -82,9 +82,12 @@ void ASnake::Move(float DeltaTime)
         {
             TailPositions[i] = TailPositions[i - 1];
         }
-        TailPositions[0] = PreviousHeadPosition;
+
+        // Adjust the position of the first tail segment to include a buffer only on the current axis
+        TailPositions[0] = PreviousHeadPosition - CurrentDirection;
     }
 }
+
 
 // Check for collision with food
 bool ASnake::CheckCollisionWithFood(FVector InFoodPosition)
@@ -120,7 +123,7 @@ void ASnake::CheckSelfCollision(const FVector& HeadPosition)
 
             // Reset snake length and tail positions
             SnakeLength = 1;
-            TailPositions.Empty();
+//            TailPositions.Empty();
 
             // Optionally, reset the snake's head position to the center or a safe start position
             SnakeHeadPosition = FVector(0.5f, 0.5f, 0.0f);
