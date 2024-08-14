@@ -84,7 +84,7 @@ void ASnake::Move(float DeltaTime)
         }
 
         // Adjust the position of the first tail segment to include a buffer only on the current axis
-        TailPositions[0] = PreviousHeadPosition - CurrentDirection;
+        TailPositions[0] = PreviousHeadPosition + CurrentDirection*CellSize*2;
     }
 }
 
