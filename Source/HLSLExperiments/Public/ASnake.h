@@ -37,8 +37,17 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TArray<FVector> TailPositions;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Snake")
+    float TimeTolerance = 1.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Snake")
+    float CellSize = 0.0333f; // Assuming a 30x30 grid, CellSize = 1 / 30
+
 private:
     FVector CurrentDirection;
+    FVector PrevDirection;
+
+    float TotalTime = 0.0f;
 
     int32 SnakeLength;
     float SnakeSpeed;
@@ -48,5 +57,5 @@ private:
 
 public:
     // Size of each grid cell in normalized space
-    const float CellSize = 0.0333f; // Assuming a 30x30 grid, CellSize = 1 / 30
+    //const float CellSize = 0.0333f; // Assuming a 30x30 grid, CellSize = 1 / 30
 };

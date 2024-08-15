@@ -3,7 +3,6 @@
 
 #include "ASnake.h"
 
-// Sets default values
 ASnake::ASnake()
 {
     // Set this actor to call Tick() every frame
@@ -16,7 +15,9 @@ ASnake::ASnake()
     CurrentDirection = FVector(CellSize, 0.0f, 0.0f); // Movement in the x-direction
 
     // Initialize food position within normalized space (0 to 1)
-    FoodPosition = FVector(FMath::RandRange(0.0f, 1.0f), FMath::RandRange(0.0f, 1.0f), 0.0f);
+    //FoodPosition = FVector(FMath::RandRange(0.0f + CellSize, 1.0f - CellSize), FMath::RandRange(0.0f + CellSize, 1.0f - CellSize), 0.0f);
+    // Set the FoodPosition to the generated random position
+    FoodPosition = FVector(FMath::RandRange(1, FMath::FloorToInt(1.0f / CellSize - 1)) * CellSize, FMath::RandRange(1, FMath::FloorToInt(1.0f / CellSize - 1)) * CellSize, 0.0f);
 
     // Load the Material Parameter Collection asset
     static ConstructorHelpers::FObjectFinder<UMaterialParameterCollection> MPCAsset(TEXT("/Script/Engine.MaterialParameterCollection'/Game/Snake/MP_Snake.MP_Snake'"));
@@ -37,33 +38,42 @@ void ASnake::BeginPlay()
 void ASnake::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    
+    TotalTime += DeltaTime;
 
-    Move(DeltaTime);
-
-    // Check for collisions with the food
-    if (CheckCollisionWithFood(FoodPosition))
+    if (TotalTime >= TimeTolerance)
     {
-        // If there was a collision, spawn new food at a random position in normalized space
-        FoodPosition = FVector(FMath::RandRange(0.0f, 1.0f), FMath::RandRange(0.0f, 1.0f), 0.0f);
-    }
+        Move(DeltaTime);
+        TotalTime = 0;
 
-    //
-    // CheckSelfCollision(SnakeHeadPosition);
-
-    // Get the collection instance from the world
-    if (MaterialParameterCollection)
-    {
-        UMaterialParameterCollectionInstance* CollectionInstance = GetWorld()->GetParameterCollectionInstance(MaterialParameterCollection);
-        if (CollectionInstance)
+        // Check for collisions with the food
+        if (CheckCollisionWithFood(FoodPosition))
         {
-            CollectionInstance->SetScalarParameterValue("SnakeHeadX", SnakeHeadPosition.X);
-            CollectionInstance->SetScalarParameterValue("SnakeHeadY", SnakeHeadPosition.Y);
-            CollectionInstance->SetScalarParameterValue("FoodX", FoodPosition.X);
-            CollectionInstance->SetScalarParameterValue("FoodY", FoodPosition.Y);
-            if (!TailPositions.IsEmpty())
+            // If there was a collision, spawn new food at a random position in normalized space
+            //FoodPosition = FVector(FMath::RandRange(0.0f, 1.0f), FMath::RandRange(0.0f, 1.0f), 0.0f);
+            FoodPosition = FVector(FMath::RandRange(1, FMath::FloorToInt(1.0f / CellSize - 1)) * CellSize, FMath::RandRange(1, FMath::FloorToInt(1.0f / CellSize - 1)) * CellSize, 0.0f);
+        }
+
+        // Get the collection instance from the world
+        if (MaterialParameterCollection)
+        {
+            UMaterialParameterCollectionInstance* CollectionInstance = GetWorld()->GetParameterCollectionInstance(MaterialParameterCollection);
+            if (CollectionInstance)
             {
-                CollectionInstance->SetScalarParameterValue("TailPosX", TailPositions[0].X);
-                CollectionInstance->SetScalarParameterValue("TailPosY", TailPositions[0].Y);
+                CollectionInstance->SetScalarParameterValue("CellSize", CellSize);
+
+                CollectionInstance->SetScalarParameterValue("SnakeHeadX", SnakeHeadPosition.X);
+                CollectionInstance->SetScalarParameterValue("SnakeHeadY", SnakeHeadPosition.Y);
+                CollectionInstance->SetScalarParameterValue("FoodX", FoodPosition.X);
+                CollectionInstance->SetScalarParameterValue("FoodY", FoodPosition.Y);
+
+                for (int i = 0; i < TailPositions.Num(); i++)
+                {
+                    FString ParamXName = FString::Printf(TEXT("TailPosX%d"), i);
+                    FString ParamYName = FString::Printf(TEXT("TailPosY%d"), i);
+                    CollectionInstance->SetScalarParameterValue(FName(*ParamXName), TailPositions[i].X);
+                    CollectionInstance->SetScalarParameterValue(FName(*ParamYName), TailPositions[i].Y);
+                }
             }
         }
     }
@@ -73,7 +83,7 @@ void ASnake::Tick(float DeltaTime)
 void ASnake::Move(float DeltaTime)
 {
     FVector PreviousHeadPosition = SnakeHeadPosition;
-    SnakeHeadPosition += CurrentDirection * SnakeSpeed * DeltaTime;
+    SnakeHeadPosition += CurrentDirection;
 
     // Ensure the tail positions are updated correctly
     if (TailPositions.Num() > 0)
@@ -84,7 +94,7 @@ void ASnake::Move(float DeltaTime)
         }
 
         // Adjust the position of the first tail segment to include a buffer only on the current axis
-        TailPositions[0] = PreviousHeadPosition + CurrentDirection*CellSize*2;
+        TailPositions[0] = PreviousHeadPosition;
     }
 }
 
@@ -109,33 +119,9 @@ bool ASnake::CheckCollisionWithFood(FVector InFoodPosition)
     return false;
 }
 
-void ASnake::CheckSelfCollision(const FVector& HeadPosition)
-{
-    const float CollisionThreshold = CellSize * 0.5f; // Use half the CellSize as a buffer
-
-    // Loop through each segment of the snake's tail to check for collisions with the head
-    for (int32 i = 1; i < TailPositions.Num(); ++i) // Start from 1 to skip the immediate previous head position
-    {
-        if (FVector::Dist(HeadPosition, TailPositions[i]) < CollisionThreshold)
-        {
-            // If the head touches the tail, log the collision and reset the snake
-            UE_LOG(LogTemp, Warning, TEXT("Self-collision detected!"));
-
-            // Reset snake length and tail positions
-            SnakeLength = 1;
-//            TailPositions.Empty();
-
-            // Optionally, reset the snake's head position to the center or a safe start position
-            SnakeHeadPosition = FVector(0.5f, 0.5f, 0.0f);
-
-            return; // Exit after resetting
-        }
-    }
-}
-
-
 // Set the direction of the snake
 void ASnake::SetDirection(FVector NewDirection)
 {
+    PrevDirection = CurrentDirection;
     CurrentDirection = NewDirection;
 }
